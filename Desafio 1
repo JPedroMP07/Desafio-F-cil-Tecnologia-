@@ -1,0 +1,66 @@
+<?php
+// Conexão com o banco de dados (preencha com suas credenciais)
+$host = 'localhost';
+$dbname = 'nome_do_banco';
+$user = 'usuario';
+$password = 'senha';
+
+try {
+    // Conecto ao banco de dados usando PDO
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $user, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    // Escrevi a query SQL
+    $sql = "
+        SELECT 
+            Tb_banco.nome AS nome_banco,
+            Tb_convenio.verba AS verba,
+            Tb_contrato.codigo AS codigo_contrato,
+            Tb_contrato.data_inclusao AS data_inclusao,
+            Tb_contrato.valor AS valor,
+            Tb_contrato.prazo AS prazo
+        FROM 
+            Tb_contrato
+        JOIN 
+            Tb_convenio_servico ON Tb_contrato.convenio_servico = Tb_convenio_servico.codigo
+        JOIN 
+            Tb_convenio ON Tb_convenio_servico.convenio = Tb_convenio.codigo
+        JOIN 
+            Tb_banco ON Tb_convenio.banco = Tb_banco.codigo;
+    ";
+
+    // Preparo e executo a consulta
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+
+    // Fetch results
+    $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Exibir os resultados
+    echo "<table border='1'>
+            <tr>
+                <th>Nome do Banco</th>
+                <th>Verba</th>
+                <th>Código do Contrato</th>
+                <th>Data de Inclusão</th>
+                <th>Valor</th>
+                <th>Prazo</th>
+            </tr>";
+
+    foreach ($resultados as $linha) {
+        echo "<tr>
+                <td>{$linha['nome_banco']}</td>
+                <td>{$linha['verba']}</td>
+                <td>{$linha['codigo_contrato']}</td>
+                <td>{$linha['data_inclusao']}</td>
+                <td>{$linha['valor']}</td>
+                <td>{$linha['prazo']}</td>
+              </tr>";
+    }
+
+    echo "</table>";
+
+} catch (PDOException $e) {
+    echo "Erro: " . $e->getMessage();
+}
+?>
